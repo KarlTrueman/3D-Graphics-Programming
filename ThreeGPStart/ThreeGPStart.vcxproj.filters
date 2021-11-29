@@ -1,0 +1,129 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="External">
+      <UniqueIdentifier>{9bec35cb-5027-4c17-8202-314da4e50368}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Helpers">
+      <UniqueIdentifier>{a90347b7-9222-4587-a11f-dc4b59d7fe2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{1ec66d55-efbd-48f7-bb4a-802ab34ff67d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Simulation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Camera.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ExternalLibraryHeaders.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageLoader.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="Mesh.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="RedirectStandardOutput.h">
+      <Filter>Helpers</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imconfig.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imgui.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imgui_impl_glfw.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imgui_impl_opengl3.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imgui_internal.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imstb_rectpack.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imstb_textedit.h">
+      <Filter>External</Filter>
+    </ClInclude>
+    <ClInclude Include="External\IMGUI\imstb_truetype.h">
+      <Filter>External</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Simulation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="External\GLEW\glew.c">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="Camera.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageLoader.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Mesh.cpp">
+      <Filter>Helpers</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui_draw.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui_impl_glfw.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui_impl_opengl3.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui_tables.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+    <ClCompile Include="External\IMGUI\imgui_widgets.cpp">
+      <Filter>External</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\Shaders\vertex_shader.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\fragment_shader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="External\IMGUI\imgui.natvis">
+      <Filter>External</Filter>
+    </Natvis>
+  </ItemGroup>
+</Project>
