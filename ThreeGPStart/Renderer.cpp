@@ -75,206 +75,234 @@ float Noise(int x, int y)
 // Load / create geometry into OpenGL buffers	
 bool Renderer::InitialiseGeometry()
 {
+
 	// Load and compile shaders into m_program
 	if (!CreateProgram())
 		return false;
 
-	std::vector<glm::vec3 > vertices;
-	std::vector<GLuint> elements;
 
-	int numCellX = 20;
-	int numCellZ = 20;
+	// Load in the jeep
+	Helpers::ModelLoader loader;
+	if (!loader.LoadFromFile("Data\\Models\\Jeep\\jeep.obj"))
+		return false;
 
-	int numVertX = numCellX + 1;
-	int numVertZ = numCellZ + 1;
+	// Now we can loop through all the mesh in the loaded model:
 
-	for (int i = 0; i < numVertX; i++)
+	Helpers::ImageLoader texture;
+	if (texture.Load("Data\\Models\\Jeep\\jeep_army.jpg"))
 	{
-		for (int j = 0; j < numVertZ; j++)
-		{
-			vertices.push_back(glm::vec3(i * 8, 0, j * 8));
-
-		}
+		glGenTextures(1, &tex);
+		glBindTexture(GL_TEXTURE_2D, tex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Width(), texture.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.GetData());
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else
+	{
+		MessageBox(NULL, L"Texture not found", L"Error", MB_OK | MB_ICONEXCLAMATION);
+		return false;
 	}
 
-	for (int cellZ = 0; cellZ < numCellZ; cellZ++)
+	for (const Helpers::Mesh& mesh : loader.GetMeshVector())
 	{
-		for (int cellX = 0; cellX < numCellX; cellX++)
-		{
-			int startVertIndex = (cellZ * numVertX) + cellX;
-			if (Swap)
-			{
-				elements.push_back(startVertIndex);
-				elements.push_back(startVertIndex + 1);
-				elements.push_back(startVertIndex + numVertX);
+		m_numElements = mesh.elements.size();
 
-				elements.push_back(startVertIndex + 1);
-				elements.push_back(startVertIndex + numVertX + 1);
-				elements.push_back(startVertIndex + numVertX);
-			}
-			else
-			{
-				elements.push_back(startVertIndex);
-				elements.push_back(startVertIndex + numVertX +1);
-				elements.push_back(startVertIndex + numVertX);
+		GLuint meshVBO;
+		glGenBuffers(1, &meshVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.vertices.size(), mesh.vertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-				elements.push_back(startVertIndex + 1);
-				elements.push_back(startVertIndex + numVertX + 1);
-				elements.push_back(startVertIndex);
-			}
-			Swap = !Swap;
-		}
-		Swap = !Swap;
+		GLuint normalsVBO;
+		glGenBuffers(1, &normalsVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.normals.size(), mesh.normals.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		GLuint texcoordsVBO;
+		glGenBuffers(1, &texcoordsVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * mesh.uvCoords.size(), mesh.uvCoords.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		GLuint meshElementsEBO;
+		glGenBuffers(1, &meshElementsEBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshElementsEBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mesh.elements.size(), mesh.elements.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+
+		std::vector<glm::vec3> verts;
+		std::vector<GLuint> elements;
+		std::vector<glm::vec3> colours;
+
+
+		
+
+		glGenVertexArrays(1, &m_VAO);
+		glBindVertexArray(m_VAO);
+
+		glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, texcoordsVBO);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshElementsEBO);
+		glBindVertexArray(0);
+
+
+
+		
+
 	}
 
-	if (NoiseGen)
-	{
+	std::vector<glm::vec3 > tervertices;
+		std::vector<GLuint> terelements;
+		std::vector<glm::vec3 > ternormals;
+		std::vector<glm::vec2 > tertexture;
+
+		int numCellX = 20;
+		int numCellZ = 20;
+
+		int numVertX = numCellX + 1;
+		int numVertZ = numCellZ + 1;
+
 		for (int i = 0; i < numVertX; i++)
 		{
 			for (int j = 0; j < numVertZ; j++)
 			{
-				NoiseVal = Noise(i, j);
-				NoiseVal = NoiseVal + 1.25 / 2;
-				glm::vec3 NoiseVec = vertices[Index];
+				tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
+				ternormals.push_back({ 0,1,0 });
 
-				if (!ExtraNoise)
-				{
-					NoiseVal = NoiseVal * 5;
-				}
-
-				NoiseVec.y = NoiseVec.y + NoiseVal;
-				vertices[Index] = NoiseVec;
-				Index++;
+				tertexture.push_back({ ((float)i / numVertZ) * 20, ((float)j / numVertX) * 20 });
 			}
 		}
-	}
 
-	GLuint positionsVBO;
-	glGenBuffers(1, &positionsVBO);
-	glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		for (int cellZ = 0; cellZ < numCellZ; cellZ++)
+		{
+			for (int cellX = 0; cellX < numCellX; cellX++)
+			{
+				int startVertIndex = (cellZ * numVertX) + cellX;
+				if (Swap)
+				{
+					terelements.push_back(startVertIndex);
+					terelements.push_back(startVertIndex + 1);
+					terelements.push_back(startVertIndex + numVertX);
 
-	GLuint ElementsEBO;
-	glGenBuffers(1, &ElementsEBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsEBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elements.size(), elements.data(), GL_STATIC_DRAW);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+					terelements.push_back(startVertIndex + 1);
+					terelements.push_back(startVertIndex + numVertX + 1);
+					terelements.push_back(startVertIndex + numVertX);
+				}
+				else
+				{
+					terelements.push_back(startVertIndex);
+					terelements.push_back(startVertIndex + numVertX + 1);
+					terelements.push_back(startVertIndex + numVertX);
 
-	m_numElements = elements.size();
+					terelements.push_back(startVertIndex + 1);
+					terelements.push_back(startVertIndex + numVertX + 1);
+					terelements.push_back(startVertIndex);
+				}
+				Swap = !Swap;
+			}
+			Swap = !Swap;
+		}
 
-	glGenVertexArrays(1, &m_VAO);
-	glBindVertexArray(m_VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(
-		0,
-		3,
-		GL_FLOAT,
-		GL_FALSE,
-		0,
-		(void*)0
-	);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsEBO);
-	glBindVertexArray(0);
+		if (NoiseGen)
+		{
+			for (int i = 0; i < numVertX; i++)
+			{
+				for (int j = 0; j < numVertZ; j++)
+				{
+					NoiseVal = Noise(i, j);
+					NoiseVal = NoiseVal + 1.25 / 2;
+					glm::vec3 NoiseVec = tervertices[Index];
 
+					if (!ExtraNoise)
+					{
+						NoiseVal = NoiseVal * 5;
+					}
 
+					NoiseVec.y = NoiseVec.y + NoiseVal;
+					tervertices[Index] = NoiseVec;
+					Index++;
+				}
+			}
+		}
 
+		GLuint terpositionsVBO;
+		glGenBuffers(1, &terpositionsVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, terpositionsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * tervertices.size(), tervertices.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	/*
-		TODO 1: The first step is to create the vertices, colours and indices
-		You could use std::vectors to hold these
+		GLuint terElementsEBO;
+		glGenBuffers(1, &terElementsEBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terElementsEBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * terelements.size(), terelements.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-		The cube is 20 by 20 centred on 0,0,0
-		so the minimum values for x, y, z are -10,-10,-10
-		and the maximum values are 10,10,10
-	*/
+		GLuint ternormalsVBO;
+		glGenBuffers(1, &ternormalsVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, ternormalsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * ternormals.size(), ternormals.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	// Load in the jeep
-	//Helpers::ModelLoader loader;
-	//if (!loader.LoadFromFile("Data\\Models\\Jeep\\jeep.obj"))
-	//	return false;
+		GLuint tertexcoordsVBO;
+		glGenBuffers(1, &tertexcoordsVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, tertexcoordsVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * tertexture.size(), tertexture.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-	//// Now we can loop through all the mesh in the loaded model:
+		t_numElements = terelements.size();
 
-	//Helpers::ImageLoader texture;
-	//if (texture.Load("Data\\Models\\Jeep\\jeep_army.jpg"))
-	//{
-	//	glGenTextures(1, &tex);
-	//	glBindTexture(GL_TEXTURE_2D, tex);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	//	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	//	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Width(), texture.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.GetData());
-	//	glGenerateMipmap(GL_TEXTURE_2D);
-	//}
-	//else
-	//{
-	//	MessageBox(NULL, L"Texture not found", L"Error", MB_OK | MB_ICONEXCLAMATION);
-	//	return false;
-	//}
+		glGenVertexArrays(1, &t_VAO);
+		glBindVertexArray(t_VAO);
 
-	//for (const Helpers::Mesh& mesh : loader.GetMeshVector())
-	//{
-	//	m_numElements = mesh.elements.size();
+		glBindBuffer(GL_ARRAY_BUFFER, terpositionsVBO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void*)0);
 
-	//	GLuint meshVBO;
-	//	glGenBuffers(1, &meshVBO);
-	//	glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.vertices.size(), mesh.vertices.data(), GL_STATIC_DRAW);
-	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, ternormalsVBO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	//	//GLuint normalsVBO;
-	//	//glGenBuffers(1, &normalsVBO);
-	//	//glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	//	//glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh.normals.size(), mesh.normals.data(), GL_STATIC_DRAW);
-	//	//glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, tertexcoordsVBO);
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
-	//	GLuint meshElementsEBO;
-	//	glGenBuffers(1, &meshElementsEBO);
-	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshElementsEBO);
-	//	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mesh.elements.size(), mesh.elements.data(), GL_STATIC_DRAW);
-	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-	//	GLuint texcoordsVBO;
-	//	glGenBuffers(1, &texcoordsVBO);
-	//	glBindBuffer(GL_ARRAY_BUFFER, texcoordsVBO);
-	//	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * mesh.uvCoords.size(), mesh.uvCoords.data(), GL_STATIC_DRAW);
-	//	glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-	//	std::vector<glm::vec3> verts;
-	//	std::vector<GLuint> elements;
-	//	std::vector<glm::vec3> colours;
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terElementsEBO);
+		glBindVertexArray(0);
 
 
-	//	
-
-	//	glGenVertexArrays(1, &m_VAO);
-	//	glBindVertexArray(m_VAO);
-
-	//	glBindBuffer(GL_ARRAY_BUFFER, meshVBO);
-	//	glEnableVertexAttribArray(0);
-	//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	//	//glBindBuffer(GL_ARRAY_BUFFER, normalsVBO);
-	//	//glEnableVertexAttribArray(1);
-	//	//glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	//	glBindBuffer(GL_ARRAY_BUFFER, texcoordsVBO);
-	//	glEnableVertexAttribArray(1);
-	//	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-	//	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshElementsEBO);
-
-	//	
-
-	//}
-
-	
-
-
-	
+		Helpers::ImageLoader texture;
+		if (texture.Load("Data\\Models\\Jeep\\grass11.bmp"))
+		{
+			glGenTextures(1, &tex);
+			glBindTexture(GL_TEXTURE_2D, tex);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texture.Width(), texture.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, texture.GetData());
+			glGenerateMipmap(GL_TEXTURE_2D);
+		}
+		else
+		{
+			MessageBox(NULL, L"Texture not found", L"Error", MB_OK | MB_ICONEXCLAMATION);
+			return false;
+		}
 
 	/*
 		TODO 5: Run it and see if you can see the cube.
@@ -336,18 +364,27 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	//	rotateY = !rotateY;
 	//}
 
-	// Send the model matrix to the shader in a uniform
-	GLuint model_xform_id = glGetUniformLocation(m_program, "model_xform");
-	glUniformMatrix4fv(model_xform_id, 1, GL_FALSE, glm::value_ptr(model_xform));
-
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glUniform1i(glGetUniformLocation(m_program, "sampelr_tex"), 0);
 
+	// Send the model matrix to the shader in a uniform
+	GLuint model_xform_id = glGetUniformLocation(m_program, "model_xform");
+	glUniformMatrix4fv(model_xform_id, 1, GL_FALSE, glm::value_ptr(model_xform));
 
 	// Bind our VAO and render
 	glBindVertexArray(m_VAO);
 	glDrawElements(GL_TRIANGLES, m_numElements, GL_UNSIGNED_INT, (void*)0);
+
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, t_tex);
+
+
+	glBindVertexArray(t_VAO);
+	glDrawElements(GL_TRIANGLES, t_numElements, GL_UNSIGNED_INT, (void*)0);
+
+
 
 }
 
