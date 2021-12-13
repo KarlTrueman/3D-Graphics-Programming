@@ -134,14 +134,9 @@ bool Renderer::InitialiseGeometry()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mesh.elements.size(), mesh.elements.data(), GL_STATIC_DRAW);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
-
-
 		std::vector<glm::vec3> verts;
 		std::vector<GLuint> elements;
 		std::vector<glm::vec3> colours;
-
-
-		
 
 		glGenVertexArrays(1, &m_VAO);
 		glBindVertexArray(m_VAO);
@@ -155,25 +150,21 @@ bool Renderer::InitialiseGeometry()
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, texcoordsVBO);
-		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, meshElementsEBO);
 		glBindVertexArray(0);
 
-
-
-		
-
 	}
 
-	std::vector<glm::vec3 > tervertices;
+		std::vector<glm::vec3 > tervertices;
 		std::vector<GLuint> terelements;
 		std::vector<glm::vec3 > ternormals;
 		std::vector<glm::vec2 > tertexture;
 
-		int numCellX = 20;
-		int numCellZ = 20;
+		int numCellX = 200;
+		int numCellZ = 200;
 
 		int numVertX = numCellX + 1;
 		int numVertZ = numCellZ + 1;
@@ -185,7 +176,7 @@ bool Renderer::InitialiseGeometry()
 				tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
 				ternormals.push_back({ 0,1,0 });
 
-				tertexture.push_back({ ((float)i / numVertZ) * 20, ((float)j / numVertX) * 20 });
+				tertexture.push_back({ ((float)i / numVertZ), ((float)j / numVertX) });
 			}
 		}
 
@@ -275,22 +266,21 @@ bool Renderer::InitialiseGeometry()
 		glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,(void*)0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, ternormalsVBO);
-		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glBindBuffer(GL_ARRAY_BUFFER, tertexcoordsVBO);
-		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(2);
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, terElementsEBO);
 		glBindVertexArray(0);
 
 
-		Helpers::ImageLoader texture;
-		if (texture.Load("Data\\Models\\Jeep\\grass11.bmp"))
+		if (texture.Load("Data\\Textures\\grass11.bmp"))
 		{
-			glGenTextures(1, &tex);
-			glBindTexture(GL_TEXTURE_2D, tex);
+			glGenTextures(1, &t_tex);
+			glBindTexture(GL_TEXTURE_2D, t_tex);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -318,6 +308,8 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	// Configure pipeline settings
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
+	
+	//glm::translate
 
 	// Wireframe mode controlled by ImGui
 	if (m_wireframe)
