@@ -69,7 +69,7 @@ float Noise(int x, int y)
 	int n = x + y * 57;
 	n = (n >> 13) ^ n;
 	int nn = (n * (n * n * 60493 + 19990303) + 1376312589) & 0x7fffffff;
-	return 1.0f - ((float)nn / 1073741824);
+	return 1.0f - ((float)nn / 1073741924.0f);
 }
 
 // Load / create geometry into OpenGL buffers	
@@ -87,7 +87,6 @@ bool Renderer::InitialiseGeometry()
 		return false;
 
 	// Now we can loop through all the mesh in the loaded model:
-
 	Helpers::ImageLoader texture;
 	if (texture.Load("Data\\Models\\Jeep\\jeep_army.jpg"))
 	{
@@ -157,32 +156,32 @@ bool Renderer::InitialiseGeometry()
 		glBindVertexArray(0);
 
 	}
-
+		//Terrain
 		std::vector<glm::vec3 > tervertices;
 		std::vector<GLuint> terelements;
 		std::vector<glm::vec3 > ternormals;
 		std::vector<glm::vec2 > tertexture;
 
-		int numCellX = 200;
-		int numCellZ = 200;
+		int numCellX = 1000;
+		int numCellZ = 1000;
 
-		int numVertX = numCellX + 1;
-		int numVertZ = numCellZ + 1;
+		int numVertX = 50;
+		int numVertZ = 50;
 
 		for (int i = 0; i < numVertX; i++)
 		{
 			for (int j = 0; j < numVertZ; j++)
 			{
-				tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
+				tervertices.push_back(glm::vec3(i * 100, 0, j * 150));
 				ternormals.push_back({ 0,1,0 });
 
-				tertexture.push_back({ ((float)i / numVertZ), ((float)j / numVertX) });
+				tertexture.push_back({ ((float)i / numVertZ) * 20, ((float)j / numVertX) *20 });
 			}
 		}
 
-		for (int cellZ = 0; cellZ < numCellZ; cellZ++)
+		for (int cellZ = 0; cellZ < numVertZ; cellZ++)
 		{
-			for (int cellX = 0; cellX < numCellX; cellX++)
+			for (int cellX = 0; cellX < numVertX; cellX++)
 			{
 				int startVertIndex = (cellZ * numVertX) + cellX;
 				if (Swap)
@@ -207,23 +206,21 @@ bool Renderer::InitialiseGeometry()
 				}
 				Swap = !Swap;
 			}
-			Swap = !Swap;
-		}
+			//Swap = !Swap;
 
+		}
 		if (NoiseGen)
 		{
-			for (int i = 0; i < numVertX; i++)
+			for (int i = 0; i < numVertZ; i++)
 			{
-				for (int j = 0; j < numVertZ; j++)
+				for (int j = 0; j < numVertX; j++)
 				{
 					NoiseVal = Noise(i, j);
-					NoiseVal = NoiseVal + 1.25 / 2;
+					NoiseVal = NoiseVal + 1.00001 / 2;
 					glm::vec3 NoiseVec = tervertices[Index];
-
-					if (!ExtraNoise)
-					{
-						NoiseVal = NoiseVal * 5;
-					}
+					
+					NoiseVal = NoiseVal * 50;
+					
 
 					NoiseVec.y = NoiseVec.y + NoiseVal;
 					tervertices[Index] = NoiseVec;
@@ -294,12 +291,90 @@ bool Renderer::InitialiseGeometry()
 			return false;
 		}
 
-	/*
-		TODO 5: Run it and see if you can see the cube.
-		You should not have to edit the render function or shaders to see the cube.
-	*/
+		//Skybox
+		Helpers::ModelLoader Skyloader;
+		if (!Skyloader.LoadFromFile("Data\\Models\\Sky\\Mountains\\skybox.x"))
+			return false;
 
-	return true;
+		for (const Helpers::Mesh& mesh2 : Skyloader.GetMeshVector())
+		{
+			//m_numElements = mesh2.elements.size();
+			Mesh newMesh;
+
+			GLuint SkyMeshVBO;
+			glGenBuffers(1, &SkyMeshVBO);
+			glBindBuffer(GL_ARRAY_BUFFER, SkyMeshVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh2.vertices.size(), mesh2.vertices.data(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			GLuint SkyNormalsVBO;
+			glGenBuffers(1, &SkyNormalsVBO);
+			glBindBuffer(GL_ARRAY_BUFFER, SkyNormalsVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * mesh2.normals.size(), mesh2.normals.data(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			GLuint SkyTexcoordsVBO;
+			glGenBuffers(1, &SkyTexcoordsVBO);
+			glBindBuffer(GL_ARRAY_BUFFER, SkyTexcoordsVBO);
+			glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * mesh2.uvCoords.size(), mesh2.uvCoords.data(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+			GLuint SkyMeshElementsEBO;
+			glGenBuffers(1, &SkyMeshElementsEBO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SkyMeshElementsEBO);
+			glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * mesh2.elements.size(), mesh2.elements.data(), GL_STATIC_DRAW);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+			newMesh.m_numElements = mesh2.elements.size();
+
+			glGenVertexArrays(1, &newMesh.VAO);
+			glBindVertexArray(newMesh.VAO);
+
+			glBindBuffer(GL_ARRAY_BUFFER, SkyMeshVBO);
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, SkyNormalsVBO);
+			glEnableVertexAttribArray(1);
+			glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			glBindBuffer(GL_ARRAY_BUFFER, SkyTexcoordsVBO);
+			glEnableVertexAttribArray(2);
+			glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, (void*)0);
+
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, SkyMeshElementsEBO);
+			glBindVertexArray(0);
+
+			Skymodel.m_meshVector.emplace_back(newMesh);
+
+		}
+		m_modelVector.emplace_back(Skymodel);
+
+		std::string facesCubemap[6] =
+		{
+			"Data\\Models\\Sky\\Mountains\\6.jpg",
+			"Data\\Models\\Sky\\Mountains\\3.jpg",
+			"Data\\Models\\Sky\\Mountains\\1.jpg",
+			"Data\\Models\\Sky\\Mountains\\2.jpg",
+			"Data\\Models\\Sky\\Mountains\\4.jpg",
+			"Data\\Models\\Sky\\Mountains\\5.jpg"
+		};
+
+		for (int i = 0; i < Skymodel.m_meshVector.size(); i++)
+		{
+			Helpers::ImageLoader SkyBox_Texture;
+			if (SkyBox_Texture.Load(facesCubemap[i]))
+			{
+				glGenTextures(1, &Skymodel.m_meshVector[i].Tex);
+				glBindTexture(GL_TEXTURE_2D, Skymodel.m_meshVector[i].Tex);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, SkyBox_Texture.Width(), SkyBox_Texture.Height(), 0, GL_RGBA, GL_UNSIGNED_BYTE, SkyBox_Texture.GetData());
+				glGenerateMipmap(GL_TEXTURE_2D);
+			}
+		}
 }
 
 // Render the scene. Passed the delta time since last called.
@@ -308,8 +383,6 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	// Configure pipeline settings
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
-	
-	//glm::translate
 
 	// Wireframe mode controlled by ImGui
 	if (m_wireframe)
@@ -325,22 +398,20 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	GLint viewportSize[4];
 	glGetIntegerv(GL_VIEWPORT, viewportSize);
 	const float aspect_ratio = viewportSize[2] / (float)viewportSize[3];
-	glm::mat4 projection_xform = glm::perspective(glm::radians(45.0f), aspect_ratio, 1.0f, 4000.0f);
+	glm::mat4 projection_xform = glm::perspective(glm::radians(45.0f), aspect_ratio, 1.0f, 40000.0f);
 
 	// Compute camera view matrix and combine with projection matrix for passing to shader
 	glm::mat4 view_xform = glm::lookAt(camera.GetPosition(), camera.GetPosition() + camera.GetLookVector(), camera.GetUpVector());
-	glm::mat4 combined_xform = projection_xform * view_xform;
+
 
 	// Use our program. Doing this enables the shaders we attached previously.
 	glUseProgram(m_program);
 
 	// Send the combined matrix to the shader in a uniform
-	GLuint combined_xform_id = glGetUniformLocation(m_program, "combined_xform");
-	glUniformMatrix4fv(combined_xform_id, 1, GL_FALSE, glm::value_ptr(combined_xform));
 
 	glm::mat4 model_xform = glm::mat4(1);
 
-	//// Uncomment all the lines below to rotate cube first round y then round x
+	// Uncomment all the lines below to rotate cube first round y then round x
 	//static float angle = 0;
 	//static bool rotateY = true;
 
@@ -356,10 +427,36 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	//	rotateY = !rotateY;
 	//}
 
+	glDepthMask(GL_FALSE);
+	glDisable(GL_DEPTH_TEST);
+
+	//Skybox Render
+	glm::mat4 view_xform2 = glm::mat4(glm::mat3(view_xform));
+	glm::mat4 combined_xform2 = projection_xform * view_xform2;
+	GLuint combined_xform_id2 = glGetUniformLocation(m_program, "combined_xform");
+	glUniformMatrix4fv(combined_xform_id2, 1, GL_FALSE, glm::value_ptr(combined_xform2));
+	for (int i = 0; i < Skymodel.m_meshVector.size(); i++)
+	{
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, Skymodel.m_meshVector[i].Tex);
+		glUniform1i(glGetUniformLocation(m_program, "sampelr_tex"), 0);
+		glBindVertexArray(Skymodel.m_meshVector[i].VAO);
+		glDrawElements(GL_TRIANGLES, Skymodel.m_meshVector[i].m_numElements, GL_UNSIGNED_INT, (void*)0);
+
+	}
+	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
+
+	//Jeep render
+	glm::mat4 combined_xform = projection_xform * view_xform;
+	GLuint combined_xform_id = glGetUniformLocation(m_program, "combined_xform");
+	glUniformMatrix4fv(combined_xform_id, 1, GL_FALSE, glm::value_ptr(combined_xform));
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	glUniform1i(glGetUniformLocation(m_program, "sampelr_tex"), 0);
 
+	model_xform = glm::translate(glm::mat4(1.0), glm::vec3{ 1000.0f, 0.0f, 500.0f });
+	 
 	// Send the model matrix to the shader in a uniform
 	GLuint model_xform_id = glGetUniformLocation(m_program, "model_xform");
 	glUniformMatrix4fv(model_xform_id, 1, GL_FALSE, glm::value_ptr(model_xform));
@@ -369,10 +466,14 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	glDrawElements(GL_TRIANGLES, m_numElements, GL_UNSIGNED_INT, (void*)0);
 
 
+	//Terrain Render
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, t_tex);
 
-
+	model_xform = glm::mat4(1.0);
+	glUniformMatrix4fv(model_xform_id, 1, GL_FALSE, glm::value_ptr(model_xform));
+	
+	//Bind vao and render
 	glBindVertexArray(t_VAO);
 	glDrawElements(GL_TRIANGLES, t_numElements, GL_UNSIGNED_INT, (void*)0);
 
