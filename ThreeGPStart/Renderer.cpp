@@ -33,36 +33,36 @@ void Renderer::DefineGUI()
 }
 
 // Load, compile and link the shaders and create a program object to host them
-bool Renderer::CreateProgram()
+GLuint Renderer::CreateProgram(std::string vsPath, std::string fsPath)
 {
 	// Create a new program (returns a unqiue id)
-	m_program = glCreateProgram();
+	GLuint program = glCreateProgram();
 
 	// Load and create vertex and fragment shaders
-	GLuint vertex_shader{ Helpers::LoadAndCompileShader(GL_VERTEX_SHADER, "Data/Shaders/vertex_shader.vert") };
-	GLuint fragment_shader{ Helpers::LoadAndCompileShader(GL_FRAGMENT_SHADER, "Data/Shaders/fragment_shader.frag") };
+	GLuint vertex_shader{ Helpers::LoadAndCompileShader(GL_VERTEX_SHADER, vsPath) };
+	GLuint fragment_shader{ Helpers::LoadAndCompileShader(GL_FRAGMENT_SHADER, fsPath) };
 	if (vertex_shader == 0 || fragment_shader == 0)
 		return false;
 
 	// Attach the vertex shader to this program (copies it)
-	glAttachShader(m_program, vertex_shader);
+	glAttachShader(program, vertex_shader);
 
 	// The attibute location 0 maps to the input stream "vertex_position" in the vertex shader
 	// Not needed if you use (location=0) in the vertex shader itself
 	//glBindAttribLocation(m_program, 0, "vertex_position");
 
 	// Attach the fragment shader (copies it)
-	glAttachShader(m_program, fragment_shader);
+	glAttachShader(program, fragment_shader);
 
 	// Done with the originals of these as we have made copies
 	glDeleteShader(vertex_shader);
 	glDeleteShader(fragment_shader);
 
 	// Link the shaders, checking for errors
-	if (!Helpers::LinkProgramShaders(m_program))
-		return false;
+	if (!Helpers::LinkProgramShaders(program))
+		return 0;
 
-	return true;
+	return program;
 }
 float Noise(int x, int y)
 {
@@ -75,10 +75,227 @@ float Noise(int x, int y)
 // Load / create geometry into OpenGL buffers	
 bool Renderer::InitialiseGeometry()
 {
-
 	// Load and compile shaders into m_program
-	if (!CreateProgram())
-		return false;
+	m_program = CreateProgram("Data/Shaders/vertex_shader.vert", "Data/Shaders/fragment_shader.frag");
+
+	m_programcube = CreateProgram("Data/Shaders/cubevertex_shader.vert", "Data/Shaders/cubefragment_shader.frag");
+
+	//Cube
+	glm::vec3 CubeCorners[8] =
+	{
+		{-10, -10, 10}, //0
+		{10, -10, 10 }, //1
+		{-10, 10, 10},  //2
+		{10, 10, 10},   //3
+
+		{-10, -10, -10}, //4
+		{10, -10, -10},  //5
+		{-10, 10, -10}, //6
+		{10, 10, -10},  //7
+
+	};
+
+	std::vector<glm::vec3> verts;
+	std::vector<GLuint> elements;
+	std::vector<glm::vec3> colours;
+
+	//red
+	colours.push_back({ 1, 0, 0 });
+	colours.push_back({ 1, 0, 0 });
+	colours.push_back({ 1, 0, 0 });
+	colours.push_back({ 1, 0, 0 });
+
+	//blue
+	colours.push_back({ 0, 1, 0 });
+	colours.push_back({ 0, 1, 0 });
+	colours.push_back({ 0, 1, 0 });
+	colours.push_back({ 0, 1, 0 });
+
+	//green
+	colours.push_back({ 0, 0, 1 });
+	colours.push_back({ 0, 0, 1 });
+	colours.push_back({ 0, 0, 1 });
+	colours.push_back({ 0, 0, 1 });
+
+	//yellow
+	colours.push_back({ 1, 1, 0 });
+	colours.push_back({ 1, 1, 0 });
+	colours.push_back({ 1, 1, 0 });
+	colours.push_back({ 1, 1, 0 });
+
+	//orange
+	colours.push_back({ 1, 0.5, 0 });
+	colours.push_back({ 1, 0.5, 0 });
+	colours.push_back({ 1, 0.5, 0 });
+	colours.push_back({ 1, 0.5, 0 });
+
+	//White
+	colours.push_back({ 1, 1, 1 });
+	colours.push_back({ 1, 1, 1 });
+	colours.push_back({ 1, 1, 1 });
+	colours.push_back({ 1, 1, 1 });
+
+	//front face
+	verts.push_back(CubeCorners[0]); //0
+	verts.push_back(CubeCorners[1]); //1
+	verts.push_back(CubeCorners[2]); //2
+	verts.push_back(CubeCorners[3]); //3
+
+	elements.push_back(0);
+	elements.push_back(1);
+	elements.push_back(2);
+
+	elements.push_back(1);
+	elements.push_back(3);
+	elements.push_back(2);
+
+	//back face
+	verts.push_back(CubeCorners[4]); //4
+	verts.push_back(CubeCorners[5]); //5
+	verts.push_back(CubeCorners[6]); //6
+	verts.push_back(CubeCorners[7]); //7
+
+
+
+	elements.push_back(5);
+	elements.push_back(4);
+	elements.push_back(6);
+
+	elements.push_back(5);
+	elements.push_back(6);
+	elements.push_back(7);
+
+	//right face
+	verts.push_back(CubeCorners[1]); //8
+	verts.push_back(CubeCorners[3]); //9
+	verts.push_back(CubeCorners[5]); //10
+	verts.push_back(CubeCorners[7]); //11
+
+
+
+	elements.push_back(8);
+	elements.push_back(10);
+	elements.push_back(11);
+
+	elements.push_back(8);
+	elements.push_back(11);
+	elements.push_back(9);
+
+	//left face
+	verts.push_back(CubeCorners[0]); //12
+	verts.push_back(CubeCorners[2]); //13
+	verts.push_back(CubeCorners[4]); //14
+	verts.push_back(CubeCorners[6]); //15
+
+
+
+	elements.push_back(12);
+	elements.push_back(15);
+	elements.push_back(14);
+
+	elements.push_back(12);
+	elements.push_back(13);
+	elements.push_back(15);
+
+	//bottom face
+	verts.push_back(CubeCorners[0]); //16
+	verts.push_back(CubeCorners[1]); //17
+	verts.push_back(CubeCorners[4]); //18
+	verts.push_back(CubeCorners[5]); //19
+
+
+
+	elements.push_back(16);
+	elements.push_back(18);
+	elements.push_back(17);
+
+	elements.push_back(19);
+	elements.push_back(17);
+	elements.push_back(18);
+
+	//top face
+	verts.push_back(CubeCorners[2]); //20
+	verts.push_back(CubeCorners[3]); //21
+	verts.push_back(CubeCorners[6]); //22
+	verts.push_back(CubeCorners[7]); //23
+
+
+
+	elements.push_back(21);
+	elements.push_back(23);
+	elements.push_back(22);
+
+	elements.push_back(20);
+	elements.push_back(21);
+	elements.push_back(22);
+
+
+
+	/*
+		TODO 2: Next you need to create VBOs for the vertices and the colours
+		You can look back to last week for examples
+	*/
+
+	GLuint positionsVBO;
+	glGenBuffers(1, &positionsVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * verts.size(), verts.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	GLuint coloursVBO;
+	glGenBuffers(1, &coloursVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, coloursVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * colours.size(), colours.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+
+
+
+	/*
+		TODO 3: You also need to create an element buffer
+		Store the number of elements in the member variable m_numElements
+	*/
+
+	GLuint ElementsEBO;
+	glGenBuffers(1, &ElementsEBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsEBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * elements.size(), elements.data(), GL_STATIC_DRAW);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+
+	/*
+		TODO 4: Finally create a VAO to wrap the buffers. You need to specify the streams for the positions
+		(attribute 0) and colours (attribute 1). You also need to bind the element buffer.
+		Use the member variable m_VAO
+	*/
+	c_numElements = elements.size();
+
+
+	glGenVertexArrays(1, &c_VAO);
+	glBindVertexArray(c_VAO);
+	glBindBuffer(GL_ARRAY_BUFFER, positionsVBO);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(
+		0,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0
+	);
+	glBindBuffer(GL_ARRAY_BUFFER, coloursVBO);
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(
+		1,
+		3,
+		GL_FLOAT,
+		GL_FALSE,
+		0,
+		(void*)0
+	);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ElementsEBO);
+	glBindVertexArray(0);
+
 
 
 	// Load in the jeep
@@ -175,13 +392,13 @@ bool Renderer::InitialiseGeometry()
 				tervertices.push_back(glm::vec3(i * 100, 0, j * 150));
 				ternormals.push_back({ 0,1,0 });
 
-				tertexture.push_back({ ((float)i / numVertZ) * 20, ((float)j / numVertX) *20 });
+				tertexture.push_back({ ((float)i / numVertZ) * 40, ((float)j / numVertX) *40 });
 			}
 		}
 
-		for (int cellZ = 0; cellZ < numVertZ; cellZ++)
+		for (int cellZ = 0; cellZ < numVertZ-1; cellZ++)
 		{
-			for (int cellX = 0; cellX < numVertX; cellX++)
+			for (int cellX = 0; cellX < numVertX-1; cellX++)
 			{
 				int startVertIndex = (cellZ * numVertX) + cellX;
 				if (Swap)
@@ -197,16 +414,16 @@ bool Renderer::InitialiseGeometry()
 				else
 				{
 					terelements.push_back(startVertIndex);
-					terelements.push_back(startVertIndex + numVertX + 1);
-					terelements.push_back(startVertIndex + numVertX);
-
 					terelements.push_back(startVertIndex + 1);
 					terelements.push_back(startVertIndex + numVertX + 1);
+
 					terelements.push_back(startVertIndex);
+					terelements.push_back(startVertIndex + numVertX + 1);
+					terelements.push_back(startVertIndex + numVertX);
 				}
 				Swap = !Swap;
 			}
-			//Swap = !Swap;
+			Swap = !Swap;
 
 		}
 		if (NoiseGen)
@@ -476,6 +693,41 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	//Bind vao and render
 	glBindVertexArray(t_VAO);
 	glDrawElements(GL_TRIANGLES, t_numElements, GL_UNSIGNED_INT, (void*)0);
+
+	//Cube Render
+
+	glUseProgram(m_programcube);
+	combined_xform = projection_xform * view_xform;
+
+	combined_xform_id = glGetUniformLocation(m_programcube, "combined_xform");
+	glUniformMatrix4fv(combined_xform_id, 1, GL_FALSE, glm::value_ptr(combined_xform));
+
+	model_xform = glm::mat4(1);
+	model_xform = glm::translate(model_xform, glm::vec3{ 1000.0f, 500.0f, 500.0f });
+	model_xform = glm::scale(model_xform, glm::vec3{ 10.0f, 10.0f, 10.0f });
+
+
+	static float angle = 0;
+	static bool rotateY = true;
+
+	if (rotateY) // Rotate around y axis		
+		model_xform = glm::rotate(model_xform, angle, glm::vec3{ 0 ,1,0 });
+	else // Rotate around x axis		
+		model_xform = glm::rotate(model_xform, angle, glm::vec3{ 1 ,0,0 });
+
+	angle+=0.001f;
+	if (angle > glm::two_pi<float>())
+	{
+		angle = 0;
+		rotateY = !rotateY;
+	}
+	
+	model_xform_id = glGetUniformLocation(m_programcube, "model_xform");
+	glUniformMatrix4fv(model_xform_id, 1, GL_FALSE, glm::value_ptr(model_xform));
+
+	glBindVertexArray(c_VAO);
+	glDrawElements(GL_TRIANGLES, c_numElements, GL_UNSIGNED_INT, (void*)0);
+
 
 
 

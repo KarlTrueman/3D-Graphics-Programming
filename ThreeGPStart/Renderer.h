@@ -25,6 +25,10 @@ private:
 	std::vector<Model> m_modelVector;
 	// Program object - to host shaders
 	GLuint m_program{ 0 };
+	GLuint m_programcube{ 0 };
+	//Cube
+	GLuint c_VAO{ 0 };
+	GLuint c_numElements{ 0 };
 	//Skybox
 	GLuint s_VAO{ 0 };
 	GLuint s_tex;
@@ -41,7 +45,7 @@ private:
 
 	bool m_wireframe{ false };
 
-	bool CreateProgram();
+	GLuint CreateProgram(std::string, std::string);
 
 	bool Swap = false;
 	bool NoiseGen = true;

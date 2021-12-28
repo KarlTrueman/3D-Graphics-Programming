@@ -120,6 +120,12 @@
     <None Include="Data\Shaders\fragment_shader.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Data\Shaders\cubefragment_shader.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\cubevertex_shader.vert">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="External\IMGUI\imgui.natvis">

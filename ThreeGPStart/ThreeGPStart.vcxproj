@@ -125,6 +125,8 @@
     <ClCompile Include="Simulation.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Data\Shaders\cubefragment_shader.frag" />
+    <None Include="Data\Shaders\cubevertex_shader.vert" />
     <None Include="Data\Shaders\fragment_shader.frag" />
     <None Include="Data\Shaders\vertex_shader.vert" />
   </ItemGroup>
