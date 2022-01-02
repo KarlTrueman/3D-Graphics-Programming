@@ -1,0 +1,52 @@
+hierarchy
+
+hull
+->	wing_right
+->	wing_left
+->	propeller
+->	gun_base
+	->	gun
+
+
+
+hull - no xforms
+
+wing_right
+tx: -2.231
+ty: 0.272
+tz: -2.663
+rx: 0
+ry: 0
+rz: 0
+
+wing_left
+tx: 2.231
+ty: 0.272
+tz: -2.663
+rx: 0
+ry: 0
+rz: 0
+
+propeller
+tx: 0
+ty: 1.395
+tz: -3.616
+rx: 90
+ry: 0
+rz: 0
+
+gun_base
+tx: 0
+ty: 0.569
+tz: -1.866
+rx: 0
+ry: 0
+rz: 0
+
+gun
+tx: 0
+ty: 1.506
+tz: 0.644
+rx: 0
+ry: 0
+rz: 0

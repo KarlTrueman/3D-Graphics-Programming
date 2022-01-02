@@ -379,11 +379,51 @@ bool Renderer::InitialiseGeometry()
 		std::vector<glm::vec3 > ternormals;
 		std::vector<glm::vec2 > tertexture;
 
-		int numCellX = 1000;
-		int numCellZ = 1000;
 
-		int numVertX = 50;
-		int numVertZ = 50;
+		int numCellX = 500;
+		int numCellZ = 500;
+
+		int numVertX = numCellX + 1;
+		int numVertZ = numCellZ + 1;
+
+		/*Helpers::ImageLoader HeightMap;
+		if (!HeightMap.Load("data\Heightmaps\\curvy.gif"))
+		{
+			for (int i = 0; i < numVertX; i++)
+			{
+				for (int j = 0; j < numVertZ; j++)
+				{
+					tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
+					tertexture.push_back(glm::vec2(j / numCellZ, i / numCellX));
+					ternormals.push_back(glm::vec3(0, 0, 0));
+
+				}
+			}
+		}
+		else
+		{
+			float vertexXtoImage = ((float)HeightMap.Width() - 1) / numVertX;
+			float vertexZtoImage = ((float)HeightMap.Height() - 1) / numVertZ;
+
+			BYTE* imageData = HeightMap.GetData();
+
+			for (size_t x = 0; x < numVertX; x++)
+			{
+				for (size_t z = 0; z < numVertZ; z++)
+				{
+					int imagex = vertexXtoImage * (numVertX - x);
+					int imagez = vertexZtoImage * z;
+
+					size_t offset = ((size_t)imagex + (size_t)imagez * HeightMap.Width()) * 4;
+					BYTE height = imageData[offset];
+
+					tervertices.push_back(glm::vec3(x * 8, (float)height, z * 8));
+					tertexture.push_back(glm::vec2(x / numCellZ, z / numCellX));
+					ternormals.push_back(glm::vec3(0, 0, 0));
+				}
+			}
+		}*/
+
 
 		for (int i = 0; i < numVertX; i++)
 		{
@@ -396,9 +436,9 @@ bool Renderer::InitialiseGeometry()
 			}
 		}
 
-		for (int cellZ = 0; cellZ < numVertZ-1; cellZ++)
+		for (int cellZ = 0; cellZ < numCellZ; cellZ++)
 		{
-			for (int cellX = 0; cellX < numVertX-1; cellX++)
+			for (int cellX = 0; cellX < numCellX; cellX++)
 			{
 				int startVertIndex = (cellZ * numVertX) + cellX;
 				if (Swap)
@@ -706,7 +746,7 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	model_xform = glm::translate(model_xform, glm::vec3{ 1000.0f, 500.0f, 500.0f });
 	model_xform = glm::scale(model_xform, glm::vec3{ 10.0f, 10.0f, 10.0f });
 
-
+	//Cube rotation
 	static float angle = 0;
 	static bool rotateY = true;
 
