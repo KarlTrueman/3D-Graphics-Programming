@@ -386,43 +386,43 @@ bool Renderer::InitialiseGeometry()
 		int numVertX = numCellX + 1;
 		int numVertZ = numCellZ + 1;
 
-		/*Helpers::ImageLoader HeightMap;
-		if (!HeightMap.Load("data\Heightmaps\\curvy.gif"))
-		{
-			for (int i = 0; i < numVertX; i++)
-			{
-				for (int j = 0; j < numVertZ; j++)
-				{
-					tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
-					tertexture.push_back(glm::vec2(j / numCellZ, i / numCellX));
-					ternormals.push_back(glm::vec3(0, 0, 0));
+		//Helpers::ImageLoader HeightMap;
+		//if (!HeightMap.Load("data\Heightmaps\\curvy.gif"))
+		//{
+		//	for (int i = 0; i < numVertX; i++)
+		//	{
+		//		for (int j = 0; j < numVertZ; j++)
+		//		{
+		//			tervertices.push_back(glm::vec3(i * 8, 0, j * 8));
+		//			tertexture.push_back(glm::vec2(j / numCellZ, i / numCellX));
+		//			ternormals.push_back(glm::vec3(0, 0, 0));
 
-				}
-			}
-		}
-		else
-		{
-			float vertexXtoImage = ((float)HeightMap.Width() - 1) / numVertX;
-			float vertexZtoImage = ((float)HeightMap.Height() - 1) / numVertZ;
+		//		}
+		//	}
+		//}
+		//else
+		//{
+		//	float vertexXtoImage = ((float)HeightMap.Width() - 1) / numVertX;
+		//	float vertexZtoImage = ((float)HeightMap.Height() - 1) / numVertZ;
 
-			BYTE* imageData = HeightMap.GetData();
+		//	BYTE* imageData = HeightMap.GetData();
 
-			for (size_t x = 0; x < numVertX; x++)
-			{
-				for (size_t z = 0; z < numVertZ; z++)
-				{
-					int imagex = vertexXtoImage * (numVertX - x);
-					int imagez = vertexZtoImage * z;
+		//	for (size_t x = 0; x < numVertX; x++)
+		//	{
+		//		for (size_t z = 0; z < numVertZ; z++)
+		//		{
+		//			int imagex = vertexXtoImage * (numVertX - x);
+		//			int imagez = vertexZtoImage * z;
 
-					size_t offset = ((size_t)imagex + (size_t)imagez * HeightMap.Width()) * 4;
-					BYTE height = imageData[offset];
+		//			size_t offset = ((size_t)imagex + (size_t)imagez * HeightMap.Width()) * 4;
+		//			BYTE height = imageData[offset];
 
-					tervertices.push_back(glm::vec3(x * 8, (float)height, z * 8));
-					tertexture.push_back(glm::vec2(x / numCellZ, z / numCellX));
-					ternormals.push_back(glm::vec3(0, 0, 0));
-				}
-			}
-		}*/
+		//			tervertices.push_back(glm::vec3(x * 8, (float)height, z * 8));
+		//			tertexture.push_back(glm::vec2(x / numCellZ, z / numCellX));
+		//			ternormals.push_back(glm::vec3(0, 0, 0));
+		//		}
+		//	}
+		//}
 
 
 		for (int i = 0; i < numVertX; i++)
