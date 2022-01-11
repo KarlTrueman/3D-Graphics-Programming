@@ -473,10 +473,10 @@ bool Renderer::InitialiseGeometry()
 				for (int j = 0; j < numVertX; j++)
 				{
 					NoiseVal = Noise(i, j);
-					NoiseVal = NoiseVal + 1.00001 / 2;
+					NoiseVal = NoiseVal + 1.00001f / 2;
 					glm::vec3 NoiseVec = tervertices[Index];
 					
-					NoiseVal = NoiseVal * 50;
+					NoiseVal = NoiseVal * 50.0f;
 					
 
 					NoiseVec.y = NoiseVec.y + NoiseVal;
@@ -546,6 +546,30 @@ bool Renderer::InitialiseGeometry()
 		{
 			MessageBox(NULL, L"Texture not found", L"Error", MB_OK | MB_ICONEXCLAMATION);
 			return false;
+		}
+
+		for (glm::vec3& n : ternormals)
+			n = glm::vec3(0, 0, 0);
+
+		for (size_t index = 0; index < elements.size(); index += 3)
+		{
+			glm::vec3 v0{ tervertices[terelements[index]] };
+			glm::vec3 v1{ tervertices[terelements[index + 1]] };
+			glm::vec3 v2{ tervertices[terelements[index + 2]] };
+
+			glm::vec3 side1 = v1 - v0;
+			glm::vec3 side2 = v2 - v0;
+
+			glm::vec3 TriNorm = glm::normalize(glm::cross(side1, side2));
+
+			ternormals[terelements[index]] += TriNorm;
+			ternormals[terelements[index + 1]] += TriNorm;
+			ternormals[terelements[index + 2]] += TriNorm;
+		}
+
+		for (size_t normIndex = 0; normIndex < ternormals.size(); normIndex++)
+		{
+			glm::normalize(ternormals[normIndex]);
 		}
 
 		//Skybox
