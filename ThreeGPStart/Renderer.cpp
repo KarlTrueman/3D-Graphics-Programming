@@ -662,7 +662,7 @@ bool Renderer::InitialiseGeometry()
 void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 {
 	// Configure pipeline settings
-	glEnable(GL_DEPTH_TEST);
+	//glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
 	// Wireframe mode controlled by ImGui
@@ -672,7 +672,7 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// Clear buffers from previous frame
-	glClearColor(0.0f, 0.0f, 0.0f, 0.f);
+	//glClearColor(0.0f, 0.0f, 0.0f, 0.f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Compute viewport and projection matrix
@@ -709,7 +709,7 @@ void Renderer::Render(const Helpers::Camera& camera, float deltaTime)
 	//}
 
 	glDepthMask(GL_FALSE);
-	glDisable(GL_DEPTH_TEST);
+	//glDisable(GL_DEPTH_TEST);
 
 	//Skybox Render
 	glm::mat4 view_xform2 = glm::mat4(glm::mat3(view_xform));
